@@ -26,6 +26,8 @@ func main() {
 	m.Use(middleware.Recoverer)
 	m.Use(middleware.AutomaticOptions)
 
+	// TODO: serve static assets
+
 	// API sub-handler.
 	api := web.New()
 	m.Handle("/api/*", api)
