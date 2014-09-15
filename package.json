@@ -1,0 +1,27 @@
+{
+  "name": "dashboard",
+  "version": "0.0.1",
+  "description": "Simple self-hosted dashboard",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andrew-d/dashboard.git"
+  },
+  "author": "Andrew Dunham (andrew@du.nham.ca)",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/andrew-d/dashboard/issues"
+  },
+  "homepage": "https://github.com/andrew-d/dashboard",
+  "dependencies": {
+    "bluebird": "^2.3.2",
+    "react": "^0.11.1",
+    "rrouter": "^0.4.2"
+  },
+  "devDependencies": {
+    "jsx-loader": "^0.11.0",
+    "webpack": "^1.4.0-beta6"
+  }
+}

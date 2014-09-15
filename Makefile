@@ -17,9 +17,13 @@ TYPE ?= debug
 ifeq ($(TYPE),release)
 export ASSET_FLAGS   :=
 export BINDATA_FLAGS := "-ignore=.*\\.map"
+export WEBPACK_FLAGS := --optimize-minimize --optimize-dedupe
+export NODE_ENV      := NODE_ENV=production
 else
 export ASSET_FLAGS   := --debug
 export BINDATA_FLAGS := -debug
+export WEBPACK_FLAGS :=
+export NODE_ENV      :=
 endif
 
 RED     := \e[0;31m
@@ -27,8 +31,18 @@ GREEN   := \e[0;32m
 YELLOW  := \e[0;33m
 NOCOLOR := \e[0m
 
-# Input resources to embed in our binary.
-RESOURCES :=
+WEBPACK_BIN  := ./node_modules/webpack/bin/webpack.js
+
+JS_FILES     := $(shell find frontend/js/ -name '*.js' -or -name '*.jsx')
+STATIC_FILES := $(shell find frontend/css -name '*.css') \
+				$(shell find frontend/fonts -type f)
+BUILD_FILES  := $(patsubst frontend/%,build/%,$(STATIC_FILES))
+
+# The final list of resources to embed in our binary.
+RESOURCES    := build/index.html \
+				build/js/bundle.js \
+				build/js/bundle.js.map \
+				$(BUILD_FILES)
 
 ######################################################################
 
@@ -56,16 +70,43 @@ resources.go: $(RESOURCES)
 		-o $@ \
 		$(sort $(dir $^))
 
+######################################################################
+
+build/js/bundle.js: $(JS_FILES)
+	@printf "  $(GREEN)WEBPACK$(NOCOLOR)  $@\n"
+	$(CMD_PREFIX)$(NODE_ENV) node $(WEBPACK_BIN) \
+		--progress --colors $(WEBPACK_FLAGS) $(NULL_REDIR)
+
+build/index.html: frontend/index.html
+	@printf "  $(GREEN)CP$(NOCOLOR)       $< ==> $@\n"
+	$(CMD_PREFIX)cp $< $@
+
+build/css/%: frontend/css/%
+	@printf "  $(GREEN)CP$(NOCOLOR)       $< ==> $@\n"
+	@mkdir -p $(dir $@)
+	$(CMD_PREFIX)cp $< $@
+
+build/fonts/%: frontend/fonts/%
+	@printf "  $(GREEN)CP$(NOCOLOR)       $< ==> $@\n"
+	@mkdir -p $(dir $@)
+	$(CMD_PREFIX)cp $< $@
+
+######################################################################
+
 # This is a phony target that checks to ensure our various dependencies are installed
 .PHONY: dependencies
 dependencies:
 	@command -v go-bindata >/dev/null 2>&1 || { printf >&2 "go-bindata is not installed, exiting...\n"; exit 1; }
 	@command -v godep      >/dev/null 2>&1 || { printf >&2 "godep is not installed, exiting...\n"; exit 1; }
+	@command -v node       >/dev/null 2>&1 || { printf >&2 "node.js is not installed, exiting...\n"; exit 1; }
+	@test -d node_modules/webpack    || { printf >&2 "npm dependencies not satisfied, exiting...\n"; exit 1; }
+	@# Since webpack doesn't seem to exit with an error if this isn't present...
+	@test -d node_modules/jsx-loader || { printf >&2 "npm dependencies not satisfied, exiting...\n"; exit 1; }
 
 ######################################################################
 
 .PHONY: clean
-CLEAN_FILES := build/dashboard resources.go descriptors.go
+CLEAN_FILES := build/dashboard resources.go descriptors.go $(RESOURCES)
 clean:
 	@printf "  $(YELLOW)RM$(NOCOLOR)       $(CLEAN_FILES)\n"
 	$(CMD_PREFIX)$(RM) -r $(CLEAN_FILES)
