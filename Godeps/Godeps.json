@@ -1,0 +1,43 @@
+{
+	"ImportPath": "github.com/andrew-d/dashboard",
+	"GoVersion": "go1.3.1",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.5.1-16-g8a758be",
+			"Rev": "8a758beb29d12fd515c3d930c657340195f4ce41"
+		},
+		{
+			"ImportPath": "github.com/goji/glogrus",
+			"Rev": "92ccdaf5e752d8c8d61733f574a9f637c5b2d40c"
+		},
+		{
+			"ImportPath": "github.com/googollee/go-engine.io",
+			"Rev": "9b1964079e35e631b87b8b903d7c9296daa4556a"
+		},
+		{
+			"ImportPath": "github.com/googollee/go-socket.io",
+			"Comment": "0.9.x-9-g449abbd",
+			"Rev": "449abbd7f5880ee18e63943997859cc639b07171"
+		},
+		{
+			"ImportPath": "github.com/gorilla/websocket",
+			"Rev": "a6f041ac33b84488bb44137d6866cd3c8706d792"
+		},
+		{
+			"ImportPath": "github.com/stretchr/graceful",
+			"Rev": "33d203351af9e6b2e733a3f10d11ffb726d66f30"
+		},
+		{
+			"ImportPath": "github.com/stretchr/pat/stop",
+			"Rev": "f7fe051f2b9bcaca162b38de4f93c9a8457160b9"
+		},
+		{
+			"ImportPath": "github.com/zenazn/goji/web",
+			"Rev": "90d355d3e1693435a6300da7d4e191126aced78e"
+		}
+	]
+}
