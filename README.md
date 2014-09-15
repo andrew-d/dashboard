@@ -24,7 +24,7 @@ accompanying "good" boolean.  The JSON input format is:
 ```json
 [
   {"name": "item 1", "good": true},
-  {"name": "item 2", "good": false},
+  {"name": "item 2", "good": false}
 ]
 ```
 
@@ -38,6 +38,6 @@ arbitrary statuses.
 [
   {"name": "item 1", "status": "loading"},
   {"name": "item 2", "status": "processing"},
-  {"name": "item 3", "status": "finished"},
+  {"name": "item 3", "status": "finished"}
 ]
 ```
