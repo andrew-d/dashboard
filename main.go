@@ -2,6 +2,8 @@ package main
 
 import (
 	"time"
+	"net/http"
+	"fmt"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/goji/glogrus"
@@ -19,6 +21,23 @@ func init() {
 	log = logrus.New()
 }
 
+
+func ServeAsset(name, mime string) http.Handler {
+	// Assert that the asset exists.
+	_, err := Asset(name)
+	if err != nil {
+		panic(fmt.Sprintf("asset named '%s' does not exist", name))
+	}
+
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		asset, _ := Asset(name)
+		w.Header().Set("Content-Type", mime)
+		w.Write(asset)
+	}
+
+	return http.HandlerFunc(handler)
+}
+
 func main() {
 	m := web.New()
 	m.Use(middleware.RequestID)
@@ -26,7 +45,11 @@ func main() {
 	m.Use(middleware.Recoverer)
 	m.Use(middleware.AutomaticOptions)
 
-	// TODO: serve static assets
+	// Static assets
+	m.Get("/", ServeAsset("index.html", "text/html"))
+	for _, asset := range AssetDescriptors() {
+		m.Get("/"+asset.Path, ServeAsset(asset.Path, asset.Mime))
+	}
 
 	// API sub-handler.
 	api := web.New()
