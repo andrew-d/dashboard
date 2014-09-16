@@ -7,7 +7,7 @@ var env = ["NODE_ENV", "NODE_DEBUG"].reduce(function(accum, k) {
 
 module.exports = {
     cache: true,
-    entry: "./frontend/js/app.js",
+    entry: "./frontend/js/App.jsx",
     output: {
         path: __dirname + "/build/js",
         filename: "bundle.js"

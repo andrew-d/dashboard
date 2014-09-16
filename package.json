@@ -16,7 +16,9 @@
   },
   "homepage": "https://github.com/andrew-d/dashboard",
   "dependencies": {
+    "asap": "^1.0.0",
     "bluebird": "^2.3.2",
+    "immutable": "^2.0.17",
     "react": "^0.11.1",
     "rrouter": "^0.4.2"
   },
