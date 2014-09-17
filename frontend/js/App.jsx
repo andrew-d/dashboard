@@ -3,8 +3,7 @@
 var asap = require('asap'),
     Immutable = require('immutable'),
     React = require('react'),
-    RRouter = require('rrouter');
-var Route = RRouter.Route;
+    Router = require('react-router-component');
 
 var MainPage = require('./pages/MainPage.jsx');
 
@@ -33,17 +32,16 @@ var rootCursor = state.cursor(function() {
 //  - have page render state
 //  - when the page is changed, force a re-render
 
-
-var routes = (
-    <Route>
-        <Route name="index" path="/" view={MainPage} cursor={rootCursor} />
-        <Route name="settings" path="/settings" view={MainPage} cursor={rootCursor} />
-    </Route>
-);
-
-var currentComponent = null;
-
-RRouter.start(routes, function(view) {
-    var el = document.querySelector('#application');
-    currentComponent = React.renderComponent(view, el);
+var App = React.createClass({
+    render: function() {
+        return (
+            <Router.Locations>
+                <Router.Location path="/" handler={MainPage} cursor={rootCursor} />
+                <Router.Location path="/settings" handler={MainPage} cursor={rootCursor} />
+            </Router.Locations>
+        );
+    },
 });
+
+
+React.renderComponent(App(), document.querySelector('#application'));

@@ -1,26 +1,47 @@
 /** @jsx React.DOM */
 
 var React = require('react'),
-    RRouter = require('rrouter');
+    Router = require('react-router-component'),
+    map = require('lodash-node/compat/collections/map');
 
-var Link = RRouter.Link;
+
+// Navbar link that applies the 'active' class if the current path matches.
+var HighlightedLink = React.createClass({
+    mixins: [Router.NavigatableMixin],
+
+    isActive: function() {
+        return this.getPath() === this.props.href;
+    },
+
+    render: function() {
+        var className;
+
+        if( this.props.activeClassName && this.isActive() ) {
+            className = this.props.activeClassName;
+        }
+
+        var link = <Router.Link>{this.props.children}</Router.Link>;
+        this.transferPropsTo(link);
+
+        return <li className={className}>{link}</li>;
+    }
+});
 
 
 var NavBar = React.createClass({
     render: function() {
-        // TODO: set active
-        var navItems = [];
+        var navSpecs = [
+            {path: '/',         icon: 'fa-dashboard', text: 'Main Page'},
+            {path: '/settings', icon: 'fa-cog',       text: 'Settings'},
+        ];
 
-        navItems.push(
-            <li key="index" className="active">
-                <Link to="index"><i className="fa fa-fw fa-dashboard"></i> Main Page</Link>
-            </li>
-        );
-        navItems.push(
-            <li key="settings">
-                <Link to="settings"><i className="fa fa-fw fa-cog"></i> Settings</Link>
-            </li>
-        );
+        var navItems = map(navSpecs, function(item) {
+            return (
+                <HighlightedLink href={item.path} activeClassName="active">
+                    <i className={'fa fa-fw ' + item.icon}></i> {item.text}
+                </HighlightedLink>
+            );
+        });
 
         // TODO: make collapse work properly
         return (
