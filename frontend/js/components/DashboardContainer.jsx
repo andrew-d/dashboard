@@ -5,7 +5,19 @@ var React = require('react');
 
 var DashboardContainer = React.createClass({
     render: function() {
-        return <div>Dashboard goes here</div>;
+        return (
+            <div id="page-wrapper">
+                <div className="container-fluid">
+                    <div className="row">
+                        <div className="col-lg-12">
+                            <h1 className="page-header">
+                                Dashboard
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
     },
 });
 

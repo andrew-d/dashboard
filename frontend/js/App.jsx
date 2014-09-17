@@ -15,7 +15,8 @@ var MainPage = require('./pages/MainPage.jsx');
 
 var routes = (
     <Route>
-        <Route path="/" view={MainPage} />
+        <Route name="index" path="/" view={MainPage} />
+        <Route name="settings" path="/settings" view={MainPage} />
     </Route>
 );
 
