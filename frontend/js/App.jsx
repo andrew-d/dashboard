@@ -1,6 +1,8 @@
 /** @jsx React.DOM */
 
-var React = require('react'),
+var asap = require('asap'),
+    Immutable = require('immutable'),
+    React = require('react'),
     RRouter = require('rrouter');
 var Route = RRouter.Route;
 
@@ -12,15 +14,36 @@ var MainPage = require('./pages/MainPage.jsx');
 //  - Load Socket.IO and listen for changes
 //  - Pass state to current route
 
+var state = Immutable.fromJS({
+    dashboards: [],
+    data: {},
+});
+
+var rootCursor = state.cursor(function() {
+    if( currentComponent !== null ) {
+        console.log("Re-rendering application...");
+        currentComponent.forceUpdate();
+    }
+});
+
+
+// TODO:
+//  - load data into immutable state
+//  - pass state to page
+//  - have page render state
+//  - when the page is changed, force a re-render
+
 
 var routes = (
     <Route>
-        <Route name="index" path="/" view={MainPage} />
-        <Route name="settings" path="/settings" view={MainPage} />
+        <Route name="index" path="/" view={MainPage} cursor={rootCursor} />
+        <Route name="settings" path="/settings" view={MainPage} cursor={rootCursor} />
     </Route>
 );
 
+var currentComponent = null;
+
 RRouter.start(routes, function(view) {
     var el = document.querySelector('#application');
-    React.renderComponent(view, el);
+    currentComponent = React.renderComponent(view, el);
 });

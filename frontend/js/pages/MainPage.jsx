@@ -7,6 +7,11 @@ var NavBar = require('../components/NavBar.jsx'),
 
 
 var MainPage = React.createClass({
+    // Debugging
+    componentDidMount: function() {
+        console.log("cursor: " + this.props.cursor);
+    },
+
     render: function() {
         return (
             <div id='wrapper'>
