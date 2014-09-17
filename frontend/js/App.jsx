@@ -19,9 +19,9 @@ var state = Immutable.fromJS({
 });
 
 var rootCursor = state.cursor(function() {
-    if( currentComponent !== null ) {
+    if( root ) {
         console.log("Re-rendering application...");
-        currentComponent.forceUpdate();
+        root.forceUpdate();
     }
 });
 
@@ -44,4 +44,4 @@ var App = React.createClass({
 });
 
 
-React.renderComponent(App(), document.querySelector('#application'));
+var root = React.renderComponent(App(), document.querySelector('#application'));
