@@ -12,12 +12,12 @@ var NavBar = React.createClass({
         var navItems = [];
 
         navItems.push(
-            <li className="active">
+            <li key="index" className="active">
                 <Link to="index"><i className="fa fa-fw fa-dashboard"></i> Main Page</Link>
             </li>
         );
         navItems.push(
-            <li>
+            <li key="settings">
                 <Link to="settings"><i className="fa fa-fw fa-cog"></i> Settings</Link>
             </li>
         );
