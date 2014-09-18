@@ -11,6 +11,11 @@
 			"Rev": "8a758beb29d12fd515c3d930c657340195f4ce41"
 		},
 		{
+			"ImportPath": "github.com/go-sql-driver/mysql",
+			"Comment": "go1",
+			"Rev": "9a7aa3606b82e2081a13a008ada88dfdb96c20fd"
+		},
+		{
 			"ImportPath": "github.com/goji/glogrus",
 			"Rev": "92ccdaf5e752d8c8d61733f574a9f637c5b2d40c"
 		},
@@ -26,6 +31,18 @@
 		{
 			"ImportPath": "github.com/gorilla/websocket",
 			"Rev": "a6f041ac33b84488bb44137d6866cd3c8706d792"
+		},
+		{
+			"ImportPath": "github.com/jmoiron/sqlx",
+			"Rev": "ccc1a706b692d25129d5365d9c96e5f20e21009f"
+		},
+		{
+			"ImportPath": "github.com/lib/pq",
+			"Rev": "04c77ed03f9b391050bec3b5f2f708f204df48b2"
+		},
+		{
+			"ImportPath": "github.com/mattn/go-sqlite3",
+			"Rev": "a80c27ba3354e27b4c8dfbbd1165bc253ca7c522"
 		},
 		{
 			"ImportPath": "github.com/stretchr/graceful",

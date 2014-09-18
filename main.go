@@ -1,16 +1,22 @@
 package main
 
 import (
-	"time"
-	"net/http"
 	"fmt"
+	"net/http"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/goji/glogrus"
+	"github.com/googollee/go-socket.io"
+	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/graceful"
 	"github.com/zenazn/goji/web"
 	"github.com/zenazn/goji/web/middleware"
-	"github.com/googollee/go-socket.io"
+
+	// Database drivers
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var (
@@ -20,7 +26,6 @@ var (
 func init() {
 	log = logrus.New()
 }
-
 
 func ServeAsset(name, mime string) http.Handler {
 	// Assert that the asset exists.
@@ -39,6 +44,20 @@ func ServeAsset(name, mime string) http.Handler {
 }
 
 func main() {
+	db, err := sqlx.Connect("sqlite3", ":memory:")
+	if err != nil {
+		log.WithFields(logrus.Fields{
+			"error": err,
+		}).Error("Could not open db")
+		return
+	}
+
+	// Persistence
+	sourceApi := NewSourceApi(db)
+
+	// TODO: conditional
+	sourceApi.CreateTables()
+
 	m := web.New()
 	m.Use(middleware.RequestID)
 	m.Use(glogrus.NewGlogrus(log, "dashboard"))
