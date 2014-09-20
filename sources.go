@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 
 	"github.com/jmoiron/modl"
@@ -84,6 +85,15 @@ func (s *SourceApi) Get(id int64) (*Source, error) {
 	}
 
 	return d.toSource()
+}
+
+func (s *SourceApi) Delete(id int64) error {
+	d := dbSource{Id: id}
+	i, err := s.dbm.Delete(&d)
+	if i == 0 {
+		return sql.ErrNoRows
+	}
+	return err
 }
 
 func (s *SourceApi) Add(n *Source) error {

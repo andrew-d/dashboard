@@ -73,6 +73,28 @@ func SourcesAdd(c web.C, w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(n)
 }
 
+func SourcesDelete(c web.C, w http.ResponseWriter, r *http.Request) {
+	api := c.Env["api.sources"].(*SourceApi)
+	id, err := strconv.ParseInt(c.URLParams["id"], 10, 64)
+	if err != nil {
+		writeError(w, 400, err)
+		return
+	}
+
+	err = api.Delete(id)
+	if err != nil {
+		if IsNotFound(err) {
+			writeError(w, 404, fmt.Errorf("source with id %d not found", id))
+			return
+		} else {
+			writeError(w, 500, err)
+			return
+		}
+	}
+
+	w.WriteHeader(204)
+}
+
 func writeError(w http.ResponseWriter, code int, err error) {
 	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(map[string]interface{}{
@@ -85,5 +107,6 @@ func writeError(w http.ResponseWriter, code int, err error) {
 func SetupApiRoutes(m *web.Mux) {
 	m.Get("/api/sources", SourcesList)
 	m.Get("/api/sources/:id", SourcesGet)
+	m.Delete("/api/sources/:id", SourcesDelete)
 	m.Post("/api/sources", SourcesAdd)
 }
