@@ -8,6 +8,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/goji/glogrus"
 	"github.com/googollee/go-socket.io"
+	"github.com/jmoiron/modl"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/graceful"
 	"github.com/zenazn/goji/web"
@@ -52,17 +53,30 @@ func main() {
 		return
 	}
 
-	// Persistence
-	sourceApi := NewSourceApi(db)
+	// TODO: configurable
+	dbm := modl.NewDbMap(db.DB, modl.SqliteDialect{})
+	sourceApi := NewSourceApi(dbm)
 
-	// TODO: conditional
-	sourceApi.CreateTables()
+	err = dbm.CreateTablesIfNotExists()
+	if err != nil {
+		log.WithFields(logrus.Fields{
+			"error": err,
+		}).Error("Could not create DB tables")
+	}
 
 	m := web.New()
 	m.Use(middleware.RequestID)
 	m.Use(glogrus.NewGlogrus(log, "dashboard"))
 	m.Use(middleware.Recoverer)
 	m.Use(middleware.AutomaticOptions)
+	m.Use(func(c *web.C, h http.Handler) http.Handler {
+		handler := func(w http.ResponseWriter, r *http.Request) {
+			c.Env["dbm"] = dbm
+			c.Env["api.sources"] = sourceApi
+			h.ServeHTTP(w, r)
+		}
+		return http.HandlerFunc(handler)
+	})
 
 	// Static assets
 	m.Get("/", ServeAsset("index.html", "text/html"))
@@ -72,9 +86,10 @@ func main() {
 
 	// API sub-handler.
 	api := web.New()
+	api.Use(JSONContentType)
 	m.Handle("/api/*", api)
 
-	api.Use(JSONContentType)
+	SetupApiRoutes(api)
 
 	// Socket.IO handler.
 	sio, err := socketio.NewServer(nil)

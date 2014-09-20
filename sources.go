@@ -3,125 +3,135 @@ package main
 import (
 	"encoding/json"
 
-	"github.com/jmoiron/sqlx"
+	"github.com/jmoiron/modl"
 )
 
+// Used as part of API
 type Source struct {
+	Id       int64                  `json:"id"`
+	Name     string                 `json:"name"`
+	Type     string                 `json:"type"`
+	Settings map[string]interface{} `json:"settings"`
+}
+
+// "Internal" only, for writing to DB
+type dbSource struct {
 	Id       int64
 	Name     string
 	Type     string
-	Settings map[string]interface{}
+	Settings []byte
+}
+
+func fromSource(s *Source) (*dbSource, error) {
+	var err error
+
+	ret := &dbSource{
+		Id:   s.Id,
+		Name: s.Name,
+		Type: s.Type,
+	}
+
+	ret.Settings, err = json.Marshal(s.Settings)
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+func (s *dbSource) toSource() (*Source, error) {
+	ret := &Source{
+		Id:       s.Id,
+		Name:     s.Name,
+		Type:     s.Type,
+		Settings: make(map[string]interface{}),
+	}
+
+	err := json.Unmarshal(s.Settings, &ret.Settings)
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (s *dbSource) updateFrom(n *Source) (err error) {
+	s.Name = n.Name
+	s.Type = n.Type
+	s.Settings, err = json.Marshal(n.Settings)
+	return
 }
 
 type SourceApi struct {
-	db *sqlx.DB
+	dbm *modl.DbMap
 }
 
-func NewSourceApi(db *sqlx.DB) *SourceApi {
-	return &SourceApi{
-		db: db,
+func NewSourceApi(dbm *modl.DbMap) *SourceApi {
+	ret := &SourceApi{
+		dbm: dbm,
 	}
+
+	tmap := dbm.AddTable(dbSource{}, "sources").SetKeys(true, "id")
+	tmap.ColMap("name").SetUnique(true)
+	return ret
 }
 
-func (s *SourceApi) CreateTables() error {
-	statements := []string{
-		`CREATE TABLE sources (
-			id INTEGER NOT NULL AUTO_INCREMENT,
-			name TEXT NOT NULL,
-			type TEXT NOT NULL,
-			settings BLOB NOT NULL,
+func (s *SourceApi) Get(id int64) (*Source, error) {
+	var d dbSource
 
-			PRIMARY KEY (id)
-		)`,
+	err := s.dbm.Get(&d, id)
+	if err != nil {
+		return nil, err
 	}
 
-	tx := s.db.MustBegin()
-	for _, stmt := range statements {
-		_, err := tx.Exec(stmt)
+	return d.toSource()
+}
+
+func (s *SourceApi) Add(n *Source) error {
+	d, err := fromSource(n)
+	if err != nil {
+		return err
+	}
+
+	err = s.dbm.Insert(d)
+	if err != nil {
+		return err
+	}
+
+	n.Id = d.Id
+	return nil
+}
+
+func (s *SourceApi) Update(u *Source) error {
+	var d dbSource
+
+	err := s.dbm.Get(&d, u.Id)
+	if err != nil {
+		return err
+	}
+
+	err = d.updateFrom(u)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.dbm.Update(s)
+	return err
+}
+
+func (s *SourceApi) List() ([]*Source, error) {
+	var sources []*dbSource
+	err := s.dbm.Select(&sources, `SELECT * FROM sources`)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := make([]*Source, len(sources))
+	for i, s := range sources {
+		ret[i], err = s.toSource()
 		if err != nil {
-			tx.Rollback()
-			return err
+			return nil, err
 		}
 	}
-	return tx.Commit()
-}
 
-func (s *SourceApi) GetSourceById(id int64) (*Source, error) {
-	ret := Source{}
-	err := s.db.Get(&ret, s.db.Rebind(`SELECT id, name, type FROM sources WHERE id=?`), id)
-	if err != nil {
-		return nil, err
-	}
-
-	var settingsJson []byte
-	err = s.db.Get(&ret, s.db.Rebind(`SELECT settings FROM sources WHERE id=?`), id)
-	if err != nil {
-		return nil, err
-	}
-
-	err = json.Unmarshal(settingsJson, &ret.Settings)
-	if err != nil {
-		return nil, err
-	}
-
-	return &ret, nil
-}
-
-func (s *SourceApi) GetSourceByName(name string) (*Source, error) {
-	ret := Source{}
-	err := s.db.Get(&ret, s.db.Rebind(`SELECT id, name, type FROM sources WHERE name=?`), name)
-	if err != nil {
-		return nil, err
-	}
-
-	var settingsJson []byte
-	err = s.db.Get(&ret, s.db.Rebind(`SELECT settings FROM sources WHERE name=?`), name)
-	if err != nil {
-		return nil, err
-	}
-
-	err = json.Unmarshal(settingsJson, &ret.Settings)
-	if err != nil {
-		return nil, err
-	}
-
-	return &ret, nil
-}
-
-func (s *SourceApi) AddSource(n *Source) error {
-	settingsJson, err := json.Marshal(n.Settings)
-	if err != nil {
-		return err
-	}
-
-	_, err = s.db.NamedExec(""+
-		`INSERT INTO sources (id, name, type, settings) `+
-		`VALUES (:id, :name, :type, :settings)`,
-		map[string]interface{}{
-			"id":       n.Id,
-			"name":     n.Name,
-			"type":     n.Type,
-			"settings": settingsJson,
-		})
-
-	return err
-}
-
-func (s *SourceApi) UpdateSource(u *Source) error {
-	settingsJson, err := json.Marshal(u.Settings)
-	if err != nil {
-		return err
-	}
-
-	_, err = s.db.NamedExec(""+
-		`UPDATE sources SET name=:name, type=:type, settings=:settings `+
-		`WHERE id=:id`,
-		map[string]interface{}{
-			"id":       u.Id,
-			"name":     u.Name,
-			"type":     u.Type,
-			"settings": settingsJson,
-		})
-
-	return err
+	return ret, nil
 }
