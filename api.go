@@ -95,6 +95,89 @@ func SourcesDelete(c web.C, w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(204)
 }
 
+func SourcesGetData(c web.C, w http.ResponseWriter, r *http.Request) {
+	api := c.Env["api.sources"].(*SourceApi)
+	id, err := strconv.ParseInt(c.URLParams["id"], 10, 64)
+	if err != nil {
+		writeError(w, 400, err)
+		return
+	}
+
+	source, err := api.Get(id)
+	if err != nil {
+		if IsNotFound(err) {
+			writeError(w, 404, fmt.Errorf("source with id %d not found", id))
+			return
+		} else {
+			writeError(w, 500, err)
+			return
+		}
+	}
+
+	data, updated, err := api.GetData(source)
+	if err != nil {
+		if IsNotFound(err) {
+			writeError(w, 404, fmt.Errorf("data for source with id %d not found", id))
+			return
+		} else {
+			writeError(w, 500, err)
+			return
+		}
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"data":    data,
+		"updated": updated,
+	})
+}
+
+func SourcesAddData(c web.C, w http.ResponseWriter, r *http.Request) {
+	api := c.Env["api.sources"].(*SourceApi)
+	id, err := strconv.ParseInt(c.URLParams["id"], 10, 64)
+	if err != nil {
+		writeError(w, 400, err)
+		return
+	}
+
+	var data interface{}
+
+	defer r.Body.Close()
+	err = json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		writeError(w, 400, err)
+		return
+	}
+
+	source, err := api.Get(id)
+	if err != nil {
+		if IsNotFound(err) {
+			writeError(w, 404, fmt.Errorf("source with id %d not found", id))
+			return
+		} else {
+			writeError(w, 500, err)
+			return
+		}
+	}
+
+	err = api.AddData(source, data)
+	if err != nil {
+		writeError(w, 500, err)
+		return
+	}
+
+	// All good!
+	// TODO: what to return?
+}
+
+func SetupApiRoutes(m *web.Mux) {
+	m.Get("/api/sources", SourcesList)
+	m.Post("/api/sources", SourcesAdd)
+	m.Get("/api/sources/:id", SourcesGet)
+	m.Delete("/api/sources/:id", SourcesDelete)
+	m.Get("/api/sources/:id/data", SourcesGetData)
+	m.Post("/api/sources/:id/data", SourcesAddData)
+}
+
 func writeError(w http.ResponseWriter, code int, err error) {
 	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(map[string]interface{}{
@@ -102,11 +185,4 @@ func writeError(w http.ResponseWriter, code int, err error) {
 		"error":  err.Error(),
 		"code":   code,
 	})
-}
-
-func SetupApiRoutes(m *web.Mux) {
-	m.Get("/api/sources", SourcesList)
-	m.Get("/api/sources/:id", SourcesGet)
-	m.Delete("/api/sources/:id", SourcesDelete)
-	m.Post("/api/sources", SourcesAdd)
 }

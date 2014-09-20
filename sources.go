@@ -3,11 +3,11 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"time"
 
 	"github.com/jmoiron/modl"
 )
 
-// Used as part of API
 type Source struct {
 	Id       int64                  `json:"id"`
 	Name     string                 `json:"name"`
@@ -73,6 +73,8 @@ func NewSourceApi(dbm *modl.DbMap) *SourceApi {
 
 	tmap := dbm.AddTable(dbSource{}, "sources").SetKeys(true, "id")
 	tmap.ColMap("name").SetUnique(true)
+
+	dbm.AddTable(SourceData{}, "source_data").SetKeys(true, "sourceid")
 	return ret
 }
 
@@ -108,6 +110,18 @@ func (s *SourceApi) Add(n *Source) error {
 	}
 
 	n.Id = d.Id
+
+	// Also insert a blank SourceData entry that can be updated later.
+	sd := SourceData{
+		SourceId: n.Id,
+		Updated:  0,
+		Value:    []byte("{}"),
+	}
+	err = s.dbm.Insert(&sd)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -144,4 +158,44 @@ func (s *SourceApi) List() ([]*Source, error) {
 	}
 
 	return ret, nil
+}
+
+type SourceData struct {
+	SourceId int64
+	Updated  int64
+	Value    []byte
+}
+
+func (s *SourceApi) AddData(i *Source, data interface{}) error {
+	// Validate the data
+	err := ValidateTypeData(i.Type, data)
+	if err != nil {
+		return err
+	}
+
+	d := SourceData{
+		SourceId: i.Id,
+		Updated:  time.Now().UTC().Unix(),
+	}
+
+	d.Value, err = json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.dbm.Update(&d)
+	return err
+}
+
+func (s *SourceApi) GetData(i *Source) (data interface{}, updated int64, err error) {
+	var d SourceData
+
+	err = s.dbm.Get(&d, i.Id)
+	if err != nil {
+		return
+	}
+
+	updated = d.Updated
+	err = json.Unmarshal(d.Value, &data)
+	return
 }
