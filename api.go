@@ -30,8 +30,13 @@ func SourcesGet(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	db, err := api.Get(id)
 	if err != nil {
-		writeError(w, 500, err)
-		return
+		if IsNotFound(err) {
+			writeError(w, 404, fmt.Errorf("source with id %d not found", id))
+			return
+		} else {
+			writeError(w, 500, err)
+			return
+		}
 	}
 
 	json.NewEncoder(w).Encode(db)
