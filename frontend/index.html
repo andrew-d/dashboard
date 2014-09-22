@@ -10,14 +10,23 @@
     <link rel="stylesheet" href="css/sb-admin.css">
     <link rel="stylesheet" href="css/font-awesome.css">
     <style>
-        html, body, #application {
+        html {
           height: 100%;
         }
-        /*
         body {
-          padding-top: 50px;
+          position: absolute;
+          height: auto;
+          left: 0;
+          right: 0;
+          top: 0;
+          bottom: 0;
+          display: block;
         }
-        */
+
+        /* The sub-div from #application is created by react-router-component */
+        #application, #application > div, #wrapper, #page-wrapper {
+          height: 100%;
+        }
     </style>
 </head>
 <body>

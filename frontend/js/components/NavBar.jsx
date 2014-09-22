@@ -31,8 +31,9 @@ var HighlightedLink = React.createClass({
 var NavBar = React.createClass({
     render: function() {
         var navSpecs = [
-            {path: '/',         icon: 'fa-dashboard', text: 'Main Page'},
-            {path: '/settings', icon: 'fa-cog',       text: 'Settings'},
+            {path: '/',         icon: 'fa-dashboard',   text: 'Main Page'},
+            {path: '/settings', icon: 'fa-cog',         text: 'Settings'},
+            {path: '/about',    icon: 'fa-info-circle', text: 'About'},
         ];
 
         var navItems = map(navSpecs, function(item) {

@@ -169,6 +169,10 @@ func SourcesAddData(c web.C, w http.ResponseWriter, r *http.Request) {
 	// TODO: what to return?
 }
 
+func TypesList(c web.C, w http.ResponseWriter, r *http.Request) {
+	json.NewEncoder(w).Encode(validTypes)
+}
+
 func SetupApiRoutes(m *web.Mux) {
 	m.Get("/api/sources", SourcesList)
 	m.Post("/api/sources", SourcesAdd)
@@ -176,6 +180,8 @@ func SetupApiRoutes(m *web.Mux) {
 	m.Delete("/api/sources/:id", SourcesDelete)
 	m.Get("/api/sources/:id/data", SourcesGetData)
 	m.Post("/api/sources/:id/data", SourcesAddData)
+
+	m.Get("/api/types", TypesList)
 }
 
 func writeError(w http.ResponseWriter, code int, err error) {
