@@ -170,7 +170,7 @@ func SourcesAddData(c web.C, w http.ResponseWriter, r *http.Request) {
 }
 
 func TypesList(c web.C, w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(validTypes)
+	json.NewEncoder(w).Encode(TypeSpecifications)
 }
 
 func SetupApiRoutes(m *web.Mux) {

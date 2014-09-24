@@ -4,27 +4,54 @@ import (
 	"fmt"
 )
 
-var validTypes = map[string]struct{}{
-	"good":   struct{}{},
-	"status": struct{}{},
+// A property that can be set on a type.
+type Property struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
+}
+
+type validateFunc func(interface{}) error
+
+type TypeSpecification struct {
+	Name       string     `json:"name"`
+	Properties []Property `json:"properties"`
+
+	validate validateFunc
+}
+
+var TypeSpecifications = []TypeSpecification{
+	{
+		Name:       "good",
+		Properties: []Property{},
+		validate:   validateGoodType,
+	},
+	{
+		Name:       "status",
+		Properties: []Property{},
+		validate:   validateStatusType,
+	},
+}
+
+var typeMap = make(map[string]TypeSpecification)
+
+func init() {
+	for _, v := range TypeSpecifications {
+		typeMap[v.Name] = v
+	}
 }
 
 func IsValidType(t string) bool {
-	_, ok := validTypes[t]
+	_, ok := typeMap[t]
 	return ok
 }
 
 func ValidateTypeData(ty string, data interface{}) error {
-	switch ty {
-	case "good":
-		return validateGoodType(data)
-
-	case "status":
-		return validateStatusType(data)
-
-	default:
+	v, ok := typeMap[ty]
+	if !ok {
 		return fmt.Errorf("unknown type: %s", ty)
 	}
+
+	return v.validate(data)
 }
 
 func validateGoodType(data interface{}) error {
