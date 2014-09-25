@@ -7,36 +7,33 @@ var GoodNotSource = require('./sources/GoodNot.jsx');
 
 
 var Source = React.createClass({
-	makeSourceDataComponent: function(source) {
-		var type = source.get('type');
+    makeSourceDataComponent: function(source) {
+        switch( source.type ) {
+        case "good":
+            return <GoodNotSource />;
 
-		switch( type ) {
-		case "good":
-			return <GoodNotSource cursor={this.props.cursor} />;
+        // case "status":
+        //     break;
 
-		// case "status":
-		//     break;
-
-		default:
-			throw new Error("unknown source type: " + type);
-		};
-	},
+        default:
+            throw new Error("unknown source type: " + type);
+        };
+    },
 
     render: function() {
-		var source = this.props.cursor.deref();
+        var source = this.props.source,
+            dataSection = this.makeSourceDataComponent(source);
 
-		var dataSection = this.makeSourceDataComponent(source);
-
-		// Each component gets a wrapper with its name and some useful buttons.
+        // Each component gets a wrapper with its name and some useful buttons.
         return (
             <div className="panel panel-default">
                 <div className="panel-heading">
-					<h3 className="panel-title">
-						{source.get('name')}
-					</h3>
+                    <h3 className="panel-title">
+                        {source.name}
+                    </h3>
                 </div>
                 <div className="panel-body">
-					{dataSection}
+                    {dataSection}
                 </div>
             </div>
         );

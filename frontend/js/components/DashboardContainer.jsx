@@ -1,24 +1,26 @@
 /** @jsx React.DOM */
 
-var React = require('react'),
-    map = require('lodash-node/compat/collections/map');
+var Flux = require('delorean.js').Flux,
+    map = require('lodash-node/compat/collections/map'),
+    React = require('react');
 
 var Source = require('./Source.jsx');
 
 
 var DashboardContainer = React.createClass({
-    render: function() {
-        var sources = this.props.cursor.deref();
-        var sourcesComponents = sources.map(function(v, k) {
-			var cursor = this.props.cursor.cursor(k);
+    mixins: [Flux.mixins.storeListener],
 
-			// Each source is half-wide normally, dropping to full-width on tablets.
-			return (
-				<div className="col-sm-12 col-md-6">
-					<Source cursor={cursor} />
-				</div>
-			);
-        }.bind(this)).toArray();
+    render: function() {
+        var sources = this.dispatcher.getStore('sourceStore').sources;
+
+        var sourcesComponents = map(sources, function(v, k) {
+            // Each source is half-wide normally, dropping to full-width on tablets.
+            return (
+                <div className="col-sm-12 col-md-6">
+                    <Source source={v} />
+                </div>
+            );
+        });
 
         return (
             <div id="page-wrapper">
@@ -32,7 +34,7 @@ var DashboardContainer = React.createClass({
                     </div>
 
                     <div className="row">
-						{sourcesComponents}
+                        {sourcesComponents}
                     </div>
                 </div>
             </div>

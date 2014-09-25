@@ -11,7 +11,7 @@ var MainPage = React.createClass({
         return (
             <div id='wrapper'>
                 <NavBar />
-                <DashboardContainer cursor={this.props.cursor.get("sources")} />
+                <DashboardContainer />
             </div>
         );
     },
