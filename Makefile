@@ -64,7 +64,7 @@ descriptors.go: $(RESOURCES)
 resources.go: $(RESOURCES)
 	@printf "  $(GREEN)BINDATA$(NOCOLOR)  $@\n"
 	$(CMD_PREFIX)go-bindata \
-		-ignore=\\.gitignore \
+		-ignore='^.*(\.gitignore|dashboard)$$' \
 		$(BINDATA_FLAGS) \
 		-prefix "./build" \
 		-o $@ \
